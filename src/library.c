@@ -48,7 +48,7 @@ void cliser_free_list(cliser_list *list, void free_data(void **)) {
 
     while (current) {
         next = current->next;
-        free_data(current->data);
+        free_data(&current->data);
         current = next;
     }
 
@@ -79,9 +79,9 @@ void cliser_free_subcommand(void **subcommand) {
         return;
     }
 
-    cliser_free_list(((cliser_subcommand) (*subcommand))->arguments, cliser_free_argument);
-    cliser_free_list(((cliser_subcommand) (*subcommand))->options, cliser_free_option);
-    cliser_free_list(((cliser_subcommand) (*subcommand))->subcommands, cliser_free_subcommand);
+    cliser_free_list((cliser_list*) &((cliser_subcommand) (*subcommand))->arguments, cliser_free_argument);
+    cliser_free_list((cliser_list*) &((cliser_subcommand) (*subcommand))->options, cliser_free_option);
+    cliser_free_list((cliser_list*) &((cliser_subcommand) (*subcommand))->subcommands, cliser_free_subcommand);
 
     free(*subcommand);
     *subcommand = NULL;
@@ -96,7 +96,7 @@ void cliser_free_schema(cliser_schema *schema) {
         return;
     }
 
-    cliser_free_list((*schema)->subcommands, cliser_free_subcommand);
+    cliser_free_list((cliser_list*) &(*schema)->subcommands, cliser_free_subcommand);
 
     free(*schema);
     *schema = NULL;
@@ -113,7 +113,11 @@ cliser_schema cliser_add_base_subcommand(cliser_schema schema, cliser_subcommand
         return schema;
     }
 
-    cliser_add_element(schema->subcommands, subcommand);
+    if (!schema->subcommands) {
+        schema->subcommands = calloc(1, sizeof(cliser_list));
+    }
+
+    schema->subcommands = cliser_add_element(schema->subcommands, subcommand);
 
     return schema;
 }
@@ -123,7 +127,11 @@ cliser_subcommand cliser_add_subcommand(cliser_subcommand subcommand, cliser_sub
         return subcommand;
     }
 
-    cliser_add_element(subcommand->subcommands, new_subcommand);
+    if (!subcommand->subcommands) {
+        subcommand->subcommands = calloc(1, sizeof(cliser_list));
+    }
+
+    subcommand->subcommands = cliser_add_element(subcommand->subcommands, new_subcommand);
 
     return subcommand;
 }
@@ -139,7 +147,11 @@ cliser_subcommand cliser_add_option(cliser_subcommand subcommand, cliser_option 
         return subcommand;
     }
 
-    cliser_add_element(subcommand->options, option);
+    if (!subcommand->options) {
+        subcommand->options = calloc(1, sizeof(cliser_list));
+    }
+
+    subcommand->options = cliser_add_element(subcommand->options, option);
 
     return subcommand;
 }
@@ -155,7 +167,11 @@ cliser_subcommand cliser_add_argument(cliser_subcommand subcommand, cliser_argum
         return subcommand;
     }
 
-    cliser_add_element(subcommand->arguments, argument);
+    if (!subcommand->arguments) {
+        subcommand->arguments = calloc(1, sizeof(cliser_list));
+    }
+
+    subcommand->arguments = cliser_add_element(subcommand->arguments, argument);
 
     return subcommand;
 }
