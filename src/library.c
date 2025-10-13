@@ -38,7 +38,7 @@ cliser_list cliser_add_element(cliser_list list, void *data) {
     return list;
 }
 
-void cliser_free_list(cliser_list *list, void free_data(void **)) {
+void cliser_free_list(cliser_list *list, void free_data(void**)) {
     if (!list || !*list || !free_data) {
         return;
     }
