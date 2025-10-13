@@ -102,9 +102,10 @@ void cliser_free_schema(cliser_schema *schema) {
     *schema = NULL;
 }
 
-cliser_subcommand cliser_create_subcommand(char *name) {
+cliser_subcommand cliser_create_subcommand(char *name, char *value) {
     cliser_subcommand subcommand = calloc(1, sizeof(struct cliser_subcommand));
     subcommand->name = name;
+    subcommand->value = value;
     return subcommand;
 }
 
@@ -136,9 +137,10 @@ cliser_subcommand cliser_add_subcommand(cliser_subcommand subcommand, cliser_sub
     return subcommand;
 }
 
-cliser_option cliser_create_option(char *name) {
+cliser_option cliser_create_option(char *name, char *value) {
     cliser_option option = calloc(1, sizeof(struct cliser_option));
     option->name = name;
+    option->value = value;
     return option;
 }
 
