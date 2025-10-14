@@ -2,6 +2,7 @@
 // Created by CR0YD on 10/12/25.
 //
 #include <library.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -237,4 +238,48 @@ cliser_argument cliser_get_argument_by_number(cliser_list list, size_t number) {
     }
 
     return NULL;
+}
+
+void cliser_parse(cliser_schema schema, int argc, char **argv) {
+    if (!schema || argc == 0 || !argv) {
+        return;
+    }
+
+    cliser_list options = NULL, arguments = NULL, subcommands = schema->subcommands;
+    cliser_option option;
+    cliser_argument argument;
+    size_t argument_count = 0;
+    cliser_subcommand subcommand;
+
+    for (int i = 1; i < argc; i++) {
+        option = cliser_get_option_by_value(options, argv[i]);
+        if (option) {
+            if (i == argc - 1) {
+                printf("### ERROR ###\n");
+                return;
+            }
+            printf("### OPTION ###\n%s: %s\n", option->name, argv[++i]);
+            continue;
+        }
+
+        subcommand = cliser_get_subcommand_by_value(subcommands, argv[i]);
+        if (subcommand) {
+            printf("### SUBCOMMAND ###\n%s: %s\n", subcommand->name, subcommand->value);
+            options = subcommand->options;
+            arguments = subcommand->arguments;
+            argument_count = 0;
+            subcommands = subcommand->subcommands;
+            continue;
+        }
+
+        argument = cliser_get_argument_by_number(arguments, argument_count);
+        if (argument) {
+            printf("### ARGUMENT ###\n%s: %s\n", argument->name, argv[i]);
+            argument_count++;
+            continue;
+        }
+
+        printf("### ERROR ###\n");
+        return;
+    }
 }

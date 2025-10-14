@@ -43,4 +43,6 @@ cliser_argument cliser_create_argument(char *name);
 
 cliser_subcommand cliser_add_argument(cliser_subcommand subcommand, cliser_argument argument);
 
+void cliser_parse(cliser_schema, int argc, char **argv);
+
 #endif // CLISER_LIBRARY_H
