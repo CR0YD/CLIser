@@ -3,6 +3,7 @@
 //
 #include <library.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct cliser_list_element {
     void *data;
@@ -137,6 +138,26 @@ cliser_subcommand cliser_add_subcommand(cliser_subcommand subcommand, cliser_sub
     return subcommand;
 }
 
+cliser_subcommand cliser_get_subcommand_by_value(cliser_list list, char *value) {
+    if (!list || !value) {
+        return NULL;
+    }
+
+    cliser_list_element current = list->first;
+    cliser_subcommand subcommand = NULL;
+
+    while (current) {
+        subcommand = (cliser_subcommand) (current->data);
+        if (strcasecmp(subcommand->value, value) == 0) {
+            return subcommand;
+        }
+
+        current = current->next;
+    }
+
+    return NULL;
+}
+
 cliser_option cliser_create_option(char *name, char *value) {
     cliser_option option = calloc(1, sizeof(struct cliser_option));
     option->name = name;
@@ -158,6 +179,26 @@ cliser_subcommand cliser_add_option(cliser_subcommand subcommand, cliser_option 
     return subcommand;
 }
 
+cliser_option cliser_get_option_by_value(cliser_list list, char *value) {
+    if (!list || !value) {
+        return NULL;
+    }
+
+    cliser_list_element current = list->first;
+    cliser_option option = NULL;
+
+    while (current) {
+        option = (cliser_option) (current->data);
+        if (strcasecmp(option->value, value) == 0) {
+            return option;
+        }
+
+        current = current->next;
+    }
+
+    return NULL;
+}
+
 cliser_argument cliser_create_argument(char *name) {
     cliser_argument argument = calloc(1, sizeof(struct cliser_argument));
     argument->name = name;
@@ -176,4 +217,24 @@ cliser_subcommand cliser_add_argument(cliser_subcommand subcommand, cliser_argum
     subcommand->arguments = cliser_add_element(subcommand->arguments, argument);
 
     return subcommand;
+}
+
+cliser_argument cliser_get_argument_by_number(cliser_list list, size_t number) {
+    if (!list || !list->first) {
+        return NULL;
+    }
+
+    cliser_list_element current = list->first;
+
+    size_t i = 0;
+    while (current) {
+        if (i == number) {
+            return current->data;
+        }
+
+        i++;
+        current = current->next;
+    }
+
+    return NULL;
 }
