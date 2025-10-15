@@ -51,6 +51,7 @@ void cliser_free_list(cliser_list *list, void free_data(void**)) {
     while (current) {
         next = current->next;
         free_data(&current->data);
+        free(current);
         current = next;
     }
 
@@ -264,6 +265,7 @@ void cliser_free_result(cliser_result *result) {
         subcommand = next;
     }
 
+    free(*result);
     *result = NULL;
 }
 
