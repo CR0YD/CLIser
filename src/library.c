@@ -117,7 +117,7 @@ cliser_schema cliser_add_base_subcommand(cliser_schema schema, cliser_subcommand
     }
 
     if (!schema->subcommands) {
-        schema->subcommands = calloc(1, sizeof(cliser_list));
+        schema->subcommands = cliser_init_list();
     }
 
     schema->subcommands = cliser_add_element(schema->subcommands, subcommand);
@@ -131,7 +131,7 @@ cliser_subcommand cliser_add_subcommand(cliser_subcommand subcommand, cliser_sub
     }
 
     if (!subcommand->subcommands) {
-        subcommand->subcommands = calloc(1, sizeof(cliser_list));
+        subcommand->subcommands = cliser_init_list();
     }
 
     subcommand->subcommands = cliser_add_element(subcommand->subcommands, new_subcommand);
@@ -172,7 +172,7 @@ cliser_subcommand cliser_add_option(cliser_subcommand subcommand, cliser_option 
     }
 
     if (!subcommand->options) {
-        subcommand->options = calloc(1, sizeof(cliser_list));
+        subcommand->options = cliser_init_list();
     }
 
     subcommand->options = cliser_add_element(subcommand->options, option);
@@ -212,7 +212,7 @@ cliser_subcommand cliser_add_argument(cliser_subcommand subcommand, cliser_argum
     }
 
     if (!subcommand->arguments) {
-        subcommand->arguments = calloc(1, sizeof(cliser_list));
+        subcommand->arguments = cliser_init_list();
     }
 
     subcommand->arguments = cliser_add_element(subcommand->arguments, argument);
