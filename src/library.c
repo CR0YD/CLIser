@@ -240,10 +240,40 @@ cliser_argument cliser_get_argument_by_number(cliser_list list, size_t number) {
     return NULL;
 }
 
-void cliser_parse(cliser_schema schema, int argc, char **argv) {
-    if (!schema || argc == 0 || !argv) {
+void cliser_free_result(cliser_result *result) {
+    if (!result || !*result) {
         return;
     }
+
+    cliser_result_subcommand subcommand = (*result)->subcommand, next;
+
+    while (subcommand) {
+        next = subcommand->subcommand;
+
+        for (short i = 0; i < subcommand->options_count; i++) {
+            free(subcommand->options[i]);
+        }
+        free(subcommand->options);
+
+        for (short i = 0; i < subcommand->arguments_count; i++) {
+            free(subcommand->arguments[i]);
+        }
+        free(subcommand->arguments);
+
+        free(subcommand);
+        subcommand = next;
+    }
+
+    *result = NULL;
+}
+
+cliser_result cliser_parse(cliser_schema schema, int argc, char **argv) {
+    if (!schema || argc == 0 || !argv) {
+        return NULL;
+    }
+
+    cliser_result result = calloc(1, sizeof(struct cliser_result));
+    cliser_result_subcommand result_subcommand = NULL;
 
     cliser_list options = NULL, arguments = NULL, subcommands = schema->subcommands;
     cliser_option option;
@@ -252,19 +282,20 @@ void cliser_parse(cliser_schema schema, int argc, char **argv) {
     cliser_subcommand subcommand;
 
     for (int i = 1; i < argc; i++) {
-        option = cliser_get_option_by_value(options, argv[i]);
-        if (option) {
-            if (i == argc - 1) {
-                printf("### ERROR ###\n");
-                return;
-            }
-            printf("### OPTION ###\n%s: %s\n", option->name, argv[++i]);
-            continue;
-        }
-
         subcommand = cliser_get_subcommand_by_value(subcommands, argv[i]);
         if (subcommand) {
             printf("### SUBCOMMAND ###\n%s: %s\n", subcommand->name, subcommand->value);
+
+            if (!result_subcommand) {
+                result_subcommand = calloc(1, sizeof(struct cliser_result_subcommand));
+                result->subcommand = result_subcommand;
+            } else {
+                result_subcommand->subcommand = calloc(1, sizeof(struct cliser_result_subcommand));
+                result_subcommand->subcommand = result_subcommand;
+            }
+
+            result_subcommand->name = subcommand->name;
+
             options = subcommand->options;
             arguments = subcommand->arguments;
             argument_count = 0;
@@ -272,14 +303,60 @@ void cliser_parse(cliser_schema schema, int argc, char **argv) {
             continue;
         }
 
+        if (!result_subcommand) {
+            printf("### ERROR ###\n");
+            cliser_free_result(&result);
+            return NULL;
+        }
+
+        option = cliser_get_option_by_value(options, argv[i]);
+        if (option) {
+            if (i == argc - 1) {
+                printf("### ERROR ###\n");
+                cliser_free_result(&result);
+                return NULL;
+            }
+
+            printf("### OPTION ###\n%s: %s\n", option->name, argv[++i]);
+
+            cliser_result_option *dest = calloc(result_subcommand->options_count + 1, sizeof(cliser_result_option));
+            memcpy(dest, result_subcommand->options, result_subcommand->options_count * sizeof(struct cliser_result_option));
+            free(result_subcommand->options);
+            result_subcommand->options = dest;
+
+            cliser_result_option result_option = calloc(1, sizeof(struct cliser_result_option));
+            result_option->name = option->name;
+            result_option->value = argv[i];
+            result_subcommand->options[result_subcommand->options_count] = result_option;
+            result_subcommand->options_count++;
+
+            continue;
+        }
+
         argument = cliser_get_argument_by_number(arguments, argument_count);
         if (argument) {
             printf("### ARGUMENT ###\n%s: %s\n", argument->name, argv[i]);
+
+
+            cliser_result_argument *dest = calloc(result_subcommand->arguments_count + 1, sizeof(cliser_result_argument));
+            memcpy(dest, result_subcommand->arguments, result_subcommand->arguments_count * sizeof(struct cliser_result_argument));
+            free(result_subcommand->arguments);
+            result_subcommand->arguments = dest;
+
+            cliser_result_argument result_argument = calloc(1, sizeof(struct cliser_result_argument));
+            result_argument->name = argument->name;
+            result_argument->value = argv[i];
+            result_subcommand->arguments[result_subcommand->arguments_count] = result_argument;
+            result_subcommand->arguments_count++;
+
             argument_count++;
             continue;
         }
 
         printf("### ERROR ###\n");
-        return;
+        cliser_free_result(&result);
+        return NULL;
     }
+
+    return result;
 }
