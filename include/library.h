@@ -25,6 +25,29 @@ typedef struct cliser_schema {
     void *subcommands;
 } *cliser_schema;
 
+typedef struct cliser_result_option {
+    char *name;
+    char *value;
+} *cliser_result_option;
+
+typedef struct cliser_result_argument {
+    char *name;
+    char *value;
+} *cliser_result_argument;
+
+typedef struct cliser_result_subcommand {
+    char *name;
+    cliser_result_option *options;
+    short options_count;
+    cliser_result_argument *arguments;
+    short arguments_count;
+    struct cliser_result_subcommand *subcommand;
+} *cliser_result_subcommand;
+
+typedef struct cliser_result {
+    cliser_result_subcommand subcommand;
+} *cliser_result ;
+
 cliser_schema cliser_create_schema(void);
 
 void cliser_free_schema(cliser_schema *schema);
@@ -42,5 +65,9 @@ cliser_subcommand cliser_add_option(cliser_subcommand subcommand, cliser_option 
 cliser_argument cliser_create_argument(char *name);
 
 cliser_subcommand cliser_add_argument(cliser_subcommand subcommand, cliser_argument argument);
+
+void cliser_free_result(cliser_result *result);
+
+cliser_result cliser_parse(cliser_schema, int argc, char **argv);
 
 #endif // CLISER_LIBRARY_H
